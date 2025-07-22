@@ -52,6 +52,7 @@ int main(int argc, char **argv)
         {"HELP",    0, HELP_CODE,    0x00000000, 0, NULL, print_help},
         {"NOTSUPPORTED", 0, NOTSUPPORTED_CODE, 0x00000000, 0, NULL, print_help},
         {"LISTRING", 2, LISTRING_CODE, 0x00000000, 0, NULL, listring_action},
+        {"RINGINFO", 2, RINGINFO_CODE, 0x00000000, 0, NULL, ringinfo_action},
     };
 
     R_datalib_function r_function;
@@ -498,6 +499,46 @@ void simple_action(R_datalib_parm_list_64* rdatalib_parms, void * function, Comm
     set_up_R_datalib_parameters(rdatalib_parms, function, parms->userid, parms->keyring);
     invoke_R_datalib(rdatalib_parms);
     check_return_code(rdatalib_parms);
+}
+
+void ringinfo_action(R_datalib_parm_list_64* rdatalib_parms, void * function, Command_line_parms* parms) {
+    R_datalib_function *func = function;
+
+    R_datalib_ring_info info_parm;
+    Data_info_buffers buffers;
+
+    memset(&buffers, 0x00, sizeof(Data_info_buffers));
+    memset(&info_parm, 0x00, sizeof(R_datalib_ring_info));
+
+
+    info_parm.search_type = 0x00000000;
+    info_parm.ring_result_len = sizeof(Data_info_buffers);
+    info_parm.ring_result_ptr = &buffers;
+
+    func->parmlist = &info_parm;
+
+    if (debug) {
+        printf("%s action\n", func->name);
+    }
+
+    set_up_R_datalib_parameters(rdatalib_parms, func, parms->userid, parms->keyring);
+    invoke_R_datalib(rdatalib_parms);
+    check_return_code(rdatalib_parms);
+
+    printf("Function code: %.2X, SAF rc: %d, RACF rc: %d, RACF rsn: %d\n",
+            rdatalib_parms->function_code, 
+            rdatalib_parms->return_code, 
+            rdatalib_parms->RACF_return_code, 
+            rdatalib_parms->RACF_reason_code);
+    
+    printf("Here is the message:\n");
+    printf("Ring_count: %d\n", buffers.ring_count);
+    for (int i = 0; i < 100; i++)
+    {
+        printf("%02X", buffers.ring_info[i]);
+    }
+    printf("\n");
+    
 }
 
 void delcert_action(R_datalib_parm_list_64* rdatalib_parms, void * function, Command_line_parms* parms) {

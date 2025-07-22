@@ -24,6 +24,8 @@
 #define MAX_SUBJECT_DN_LEN 2*1024   // may be adjusted
 #define MAX_RECORD_ID_LEN 246
 #define MAX_EXTRA_ARG_LEN 256       // may be adjusted
+#define RING_INFO_BUFFER_LEN 64*1024   // may be adjusted
+
 
 #define GETCERT_CODE 0x01
 #define GETNEXT_CODE 0x02
@@ -33,6 +35,7 @@
 #define DELCERT_CODE 0x09
 #define DELRING_CODE 0x0A
 #define REFRESH_CODE 0x0B
+#define RINGINFO_CODE 0x0D
 #define HELP_CODE  0x00
 #define LISTRING_CODE 0xFF
 #define NOTSUPPORTED_CODE 0x00
@@ -175,6 +178,17 @@ typedef _Packed struct _R_datalib_data_put { // DO NOT change property positions
     char reserved_4[3];
 } R_datalib_data_put;
 
+typedef _Packed struct _Data_info_buffers {
+    int ring_count;
+    char ring_info[RING_INFO_BUFFER_LEN];
+} Data_info_buffers;
+
+typedef _Packed struct _R_datalib_ring_info { // DO NOT change property positions in this struct
+    int search_type;
+    int ring_result_len;
+    Data_info_buffers *ring_result_ptr;
+} R_datalib_ring_info;
+
 void invoke_R_datalib(R_datalib_parm_list_64*);
 void set_up_R_datalib_parameters(R_datalib_parm_list_64* , R_datalib_function* , char* ,char* );
 void listring_action(R_datalib_parm_list_64*, void*,Command_line_parms*);
@@ -189,5 +203,6 @@ void check_return_code(R_datalib_parm_list_64*);
 void dump_certificate_and_key(Data_get_buffers*, Command_line_parms*);
 void write_to_file(char*, char*, int, int);
 int load_pkcs12_file(gsk_buffer*, char*);
+void ringinfo_action(R_datalib_parm_list_64* , void * , Command_line_parms* );
 
 #endif
